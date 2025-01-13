@@ -2,16 +2,12 @@
 
 alist访问端口：5678
 
-emby访问端口：2345
-
-jellyfin访问端口：2346
-
 tvbox访问地址：http://ip:5678/tvbox/my_ext.json
 
 ## 启动命令
 
 ```
-docker run -d -p 5678:80 -p 2345:2345 -p 2346:2346 --restart=unless-stopped --name=xiaoya monlor/xiaoya-alist:latest
+docker run -d -p 5678:5678 --restart=unless-stopped --name=xiaoya yilee01/xiaoya-alist:latest
 ```
 
 ## 环境变量
@@ -44,16 +40,10 @@ docker run -d -p 5678:80 -p 2345:2345 -p 2346:2346 --restart=unless-stopped --na
 
 `WEBDAV_PASSWORD`: webdav用户名为dav，设置密码。默认用户密码：guest/guest_Api789
 
-`EMBY_ADDR`: emby部署地址，默认http://emby:6908，容器内部使用地址，一般不用改
-
-`JELLYFIN_ADDR`: jellyfin部署地址，默认http://jellyfin:8096，容器内部使用地址，一般不用改
-
-`EMBY_APIKEY`: 填入一个emby的api key，用于在infuse中播放emby
-
 `AUTO_UPDATE_ENABLED`: 每天自动更新小雅的文件，true/false，默认false
+
+`AUTO_UPDATE_CRON`: 小雅alist文件自动更新cron表达式，默认配置：每周执行一次 参考[crontab](https://tool.lu/crontab/)
 
 `AUTO_CLEAR_ENABLED`: 自动清理阿里云云盘的文件，true/false，默认false
 
-`AUTO_CLEAR_INTERVAL`: 自动清理间隔，单位分钟，范围0-60分钟，默认10分钟
-
-`AUTO_CLEAR_THRESHOLD`: 阿里云盘自动清理文件存在时间阈值，单位分钟，范围0-60分钟，默认10分钟
+`AUTO_CLEAR_CRON`: 阿里云盘自动清理cron表达式，默认配置：每小时执行一次 参考[crontab](https://tool.lu/crontab/)

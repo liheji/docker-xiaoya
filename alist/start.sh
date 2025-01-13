@@ -187,33 +187,58 @@ fi
 # 设置数据下载目录
 echo "http://127.0.0.1:5233/data" > /data/download_url.txt
 
+# 验证cron表达式的函数
+validate_cron_expression() {
+    local cron_expr="$1"
+    local encoded_expr=$(echo "$cron_expr" | sed 's/ /+/g')
+
+    local response=$(curl -s --connect-timeout 5 --max-time 10 'https://tool.lu/crontab/ajax.html' \
+        -H 'accept: application/json' \
+        -H 'content-type: application/x-www-form-urlencoded; charset=UTF-8' \
+        -H 'origin: https://tool.lu' \
+        -H 'referer: https://tool.lu/crontab/' \
+        -H 'user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36' \
+        --data-raw "type=1&expression=${encoded_expr}")
+
+    if [ -z "$response" ]; then
+        echo "网络连接失败"
+        return 1
+    fi
+
+    if [ "$(echo "$response" | jq -r '.status')" = "true" ]; then
+        return 0
+    else
+        echo "Cron表达式验证失败: $(echo "$response" | jq -r '.message // "未知错误"')"
+        return 1
+    fi
+}
+
+
 crontabs=""
 
 if [ "${AUTO_UPDATE_ENABLED:=false}" = "true" ]; then
-    echo "启动定时更新定时任务..."
-    # 随机生成一个时间，避免给服务器造成压力
-    random_min=$(shuf -i 0-59 -n 1)
-    random_hour=$(shuf -i 2-6 -n 1)
-    crontabs="${random_min} ${random_hour} * * * /service.sh update"
+    echo "启动alist文件定时更新任务..."
+    if [ -n "${AUTO_UPDATE_CRON:-}" ] && validate_cron_expression "${AUTO_UPDATE_CRON}"; then
+        echo "使用自定义更新计划: ${AUTO_UPDATE_CRON}"
+        crontabs="${AUTO_UPDATE_CRON} /service.sh update"
+    else
+        echo "错误: AUTO_UPDATE_CRON格式不正确或未设置，使用默认配置：每周执行一次"
+        random_min=$(shuf -i 0-59 -n 1)
+        random_hour=$(shuf -i 2-7 -n 1)
+        crontabs="${random_min} ${random_hour} * * 1 /service.sh update"
+    fi
 fi
 
 if [ "${AUTO_CLEAR_ENABLED:=false}" = "true" ]; then
-    echo "启动定时清理定时任务..."
-    AUTO_CLEAR_INTERVAL=${AUTO_CLEAR_INTERVAL:=10}
-    HOURS=$(($AUTO_CLEAR_INTERVAL / 60))
-    REMAINING_MINUTES=$(($AUTO_CLEAR_INTERVAL % 60))
-    
-    if [ $HOURS -gt 0 ]; then
-      if [ $REMAINING_MINUTES -eq 0 ]; then
-        CRONTAB_TIME="0 */$HOURS * * *"
-      else
-        CRONTAB_TIME="$REMAINING_MINUTES */$HOURS * * *"
-      fi
+    echo "启动阿里云盘定时清理任务..."
+    if [ -n "${AUTO_CLEAR_CRON:-}" ] && validate_cron_expression "${AUTO_CLEAR_CRON}"; then
+        echo "使用自定义清理计划: ${AUTO_CLEAR_CRON}"
+        crontabs="${crontabs}\n${AUTO_CLEAR_CRON} /clear.sh"
     else
-      CRONTAB_TIME="*/$REMAINING_MINUTES * * * *"
+        echo "错误: AUTO_CLEAR_CRON格式错误或未设置，使用默认配置：每小时执行一次"
+        # 使用默认的10分钟间隔
+        crontabs="${crontabs}\n0 * * * * /clear.sh"
     fi
-    crontabs="${crontabs}\n$CRONTAB_TIME /clear.sh"
-    #crontabs="${crontabs}\n*/${AUTO_CLEAR_INTERVAL:=10} * * * * /clear.sh"
 fi
 
 # 添加后台守护
@@ -222,16 +247,6 @@ crontabs="${crontabs}\n* * * * * /service.sh daemon"
 if [ -n "${crontabs}" ]; then
     echo -e "$crontabs" | crontab -
 fi
-
-# 设置本地变量
-echo "${EMBY_APIKEY:-e825ed6f7f8f44ffa0563cddaddce14d}" > /data/infuse_api_key.txt
-
-if [ "${AUTO_UPDATE_MEDIA_ADDR:=true}" = "true" ]; then
-    echo "开始自动更新媒体服务地址..."
-    /update_media_addr.sh &> /dev/null &
-fi
-
-/fix_media.sh &
 
 /entrypoint.sh /opt/alist/alist server --no-prefix &
 

@@ -4,7 +4,7 @@ RUN apk add dumb-init
 
 FROM xiaoyaliu/alist:hostmode
 
-LABEL MAINTAINER me@monlor.com
+LABEL MAINTAINER me@yilee.top
 
 ENV TZ=Asia/Shanghai
 
