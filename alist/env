@@ -29,6 +29,8 @@ AUTO_UPDATE_CRON="38 5 * * 1"
 AUTO_CLEAR_ENABLED=true
 # 阿里云盘自动清理cron表达式，默认配置：每小时执行一次
 AUTO_CLEAR_CRON="0 0 * * *"
+# 是否开启小雅alist文件自动更新后，执行后置脚本，true/false，默认false【需要将脚本放在挂在 /post_script】
+EXECUTE_POST_ENABLED=false
 # pikpak 账号，用来观看小雅中pikpak分享给你的资源，格式：`qqq@qq.com:aaadds`
 PIKPAK_USER=
 # 开启tvbox随机订阅地址，true/false，默认false

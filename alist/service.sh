@@ -60,10 +60,23 @@ download_files() {
     fi
 }
 
+# 更新完成以后执行后置脚本
+exec_post_script() {
+  if [ "${EXECUTE_POST_ENABLED:=false}" = "true" ]; then
+      for script in /post_script/*.sh; do
+          if [ -f "$script" ]; then
+              echo "执行后置脚本: $script"
+              bash "$script" || echo "脚本 $script 执行失败。"
+          fi
+      done
+  fi
+}
+
 start() {
     /entrypoint.sh /opt/alist/alist server --no-prefix &
     sleep 30
     echo "1" > /tmp/status
+    sleep 600 && exec_post_script
 }
 
 stop() {

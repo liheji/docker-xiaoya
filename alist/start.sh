@@ -213,9 +213,7 @@ validate_cron_expression() {
     fi
 }
 
-
 crontabs=""
-
 if [ "${AUTO_UPDATE_ENABLED:=false}" = "true" ]; then
     echo "启动alist文件定时更新任务..."
     if [ -n "${AUTO_UPDATE_CRON:-}" ] && validate_cron_expression "${AUTO_UPDATE_CRON}"; then
