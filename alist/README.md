@@ -44,7 +44,7 @@ docker run -d -p 5678:5678 --restart=unless-stopped --name=xiaoya yilee01/xiaoya
 
 `AUTO_UPDATE_CRON`: 小雅alist文件自动更新cron表达式，默认配置：每周执行一次 参考[crontab](https://tool.lu/crontab/)
 
-`EXECUTE_POST_ENABLED`: 是否开启小雅alist文件自动更新后，执行后置脚本，true/false，默认false【需要将脚本放在挂在 /post_script】
+`EXECUTE_POST_ENABLED`: 是否开启小雅alist文件自动更新后，执行后置脚本，true/false，默认false【需要将脚本放在挂在 /script】
 
 `AUTO_CLEAR_ENABLED`: 自动清理阿里云云盘的文件，true/false，默认false
 

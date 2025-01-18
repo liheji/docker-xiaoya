@@ -234,10 +234,12 @@ if [ "${AUTO_CLEAR_ENABLED:=false}" = "true" ]; then
         crontabs="${crontabs}\n${AUTO_CLEAR_CRON} /clear.sh"
     else
         echo "错误: AUTO_CLEAR_CRON格式错误或未设置，使用默认配置：每小时执行一次"
-        # 使用默认的10分钟间隔
         crontabs="${crontabs}\n0 * * * * /clear.sh"
     fi
 fi
+
+# 添加加载完成的后置任务
+crontabs="${crontabs}\n* * * * * /post_service.sh"
 
 # 添加后台守护
 crontabs="${crontabs}\n* * * * * /service.sh daemon"
