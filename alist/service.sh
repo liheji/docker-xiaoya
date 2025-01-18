@@ -66,7 +66,8 @@ exec_post_script() {
       for script in /post_script/*.sh; do
           if [ -f "$script" ]; then
               echo "执行后置脚本: $script"
-              bash "$script" || echo "脚本 $script 执行失败。"
+              bash "$script" > /dev/null 2>&1 &
+              echo "脚本 $script 已在后台启动"
           fi
       done
   fi
@@ -76,7 +77,7 @@ start() {
     /entrypoint.sh /opt/alist/alist server --no-prefix &
     sleep 30
     echo "1" > /tmp/status
-    sleep 600 && exec_post_script
+    exec_post_script
 }
 
 stop() {
